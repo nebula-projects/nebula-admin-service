@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.nebula.admin.service.dao.mapper.NebulaMapper">
+
+    <sql id="Base_Column_List">
+        id, host, description, domainName, heartbeat, createdDate, modifiedDate
+    </sql>
+
+    <select id="findById" resultType="Nebula" parameterType="java.lang.Long">
+        select
+        <include refid="Base_Column_List"/>
+        from `nebulas`
+        where id = #{id}
+    </select>
+
+    <select id="findByHost" resultType="Nebula" parameterType="String">
+        select
+        <include refid="Base_Column_List"/>
+        from `nebulas`
+        where host = #{host}
+    </select>
+
+    <insert id="insert" parameterType="Nebula" useGeneratedKeys="true"
+            keyProperty="id">
+        insert into `nebulas` (host, description, domainName, heartbeat, createdDate, modifiedDate)
+        values ( #{host}, #{description}, #{domainName}, now(), now(), now())
+    </insert>
+
+    <update id="update" parameterType="Nebula">
+        update `nebulas`
+        set
+        <if test="description != null">
+            description=#{description},
+        </if>
+        <if test="heartbeat != null">
+            heartbeat = #{heartbeat},
+        </if>
+        modifiedDate=now()
+        where host = #{host}
+    </update>
+
+    <update id="heartbeat">
+        update `nebulas`
+        set
+        heartbeat=now(),
+        modifiedDate=now()
+        where host = #{host}
+    </update>
+
+    <update id="updateDomainName">
+        update `nebulas`
+        set
+        domainName=#{domainName},
+        modifiedDate=now()
+        where host = #{host}
+    </update>
+
+    <update id="clearDomain">
+        update `nebulas`
+        set
+        domainName=null,
+        modifiedDate=now()
+        where domainName = #{domainName}
+    </update>
+
+    <select id="search" resultType="Nebula" parameterType="String">
+        select
+        <include refid="Base_Column_List"/>
+        from `nebulas`
+        <if test="host != null and host !=''">
+            where host like CONCAT('', #{host},'%')
+        </if>
+        order by id DESC
+    </select>
+
+    <select id="countFuzzyMatchNebulas" resultType="int">
+        select count(1)
+        from `nebulas`
+        <if test="host != null and host !=''">
+            where host like CONCAT('', #{host},'%')
+        </if>
+    </select>
+
+    <select id="count" resultType="int">
+        select count(1)
+        from `nebulas`;
+    </select>
+
+    <delete id="delete" parameterType="String">
+        delete from `nebulas` where host=#{host}
+    </delete>
+
+    <select id="searchAvailableNebulaHosts" resultType="String">
+        select host from `nebulas`
+        where domainName is NULL
+        <if test="host != null and host !=''">
+            and host like CONCAT('', #{host},'%')
+        </if>
+        order by host DESC
+    </select>
+
+    <select id="findByDomain" resultType="Nebula">
+        select
+        <include refid="Base_Column_List"/>
+        from `nebulas`
+        where domainName = #{domainName}
+    </select>
+
+
+</mapper>

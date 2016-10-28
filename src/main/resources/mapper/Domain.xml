@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.nebula.admin.service.dao.mapper.DomainMapper">
+
+    <sql id="Base_Column_List">
+        id, name, dbUrl, redisHost, redisPort, description, status,
+        createdDate, modifiedDate
+    </sql>
+
+    <select id="findById" resultType="Domain" parameterType="long">
+        select
+        <include refid="Base_Column_List"/>
+        from domain
+        where id = #{id}
+    </select>
+
+    <select id="findByName" resultType="Domain" parameterType="String">
+        select
+        <include refid="Base_Column_List"/>
+        from domain
+        where name = #{name}
+    </select>
+
+    <insert id="insert" parameterType="Domain" useGeneratedKeys="true"
+            keyProperty="id">
+        insert into domain (name, dbUrl, redisHost, redisPort, description,
+        status, createdDate, modifiedDate)
+        values ( #{name},
+        #{dbUrl}, #{redisHost}, #{redisPort}, #{description}, #{status}, now(), now())
+    </insert>
+
+    <update id="update" parameterType="Domain">
+        update domain
+        set
+        <if test="dbUrl != null">
+            dbUrl= #{dbUrl},
+        </if>
+        <if test="redisHost != null">
+            redisHost= #{redisHost},
+        </if>
+        <if test="redisPort != null">
+            redisPort=#{redisPort},
+        </if>
+        <if test="status != null">
+            status=#{status},
+        </if>
+        description=#{description},
+        modifiedDate=now()
+        where id = #{id}
+    </update>
+
+    <select id="search" resultType="Domain" parameterType="String">
+        select
+        <include refid="Base_Column_List"/>
+        from domain
+        <if test="name != null and name !=''">
+            where name like CONCAT('', #{name},'%')
+        </if>
+        order by id DESC
+    </select>
+
+    <select id="countByName" resultType="int" parameterType="String">
+        select count(1)
+        from domain
+        <if test="name != null and name !=''">
+            where name like CONCAT('', #{name},'%')
+        </if>
+    </select>
+
+    <delete id="delete" parameterType="String">
+        delete from domain where name=#{name}
+    </delete>
+
+    <select id="searchWithFilter" resultType="String">
+        select name from domain
+        <where>
+
+            <if test="name != null and name !=''">
+                name like CONCAT('', #{name},'%')
+            </if>
+            <if test="excludedDomains != null">
+                and name not in
+                <foreach item="excludedDomain" index="index" collection="excludedDomains"
+                         open="(" separator="," close=")">
+                    #{excludedDomain}
+                </foreach>
+            </if>
+        </where>
+        order by id DESC
+    </select>
+
+    <select id="countWithFilter" resultType="int">
+        select count(1) from domain
+        <where>
+            <if test="name != null and name !=''">
+                name like CONCAT('', #{name},'%')
+            </if>
+            <if test="excludedDomains != null">
+                and name not in
+                <foreach item="excludedDomain" index="index" collection="excludedDomains"
+                         open="(" separator="," close=")">
+                    #{excludedDomain}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+    <select id="findDomainNamesByUsernameWithFilter" resultType="String">
+        select domainName
+        from `userdomain` where username=#{username}
+        <if test="excludedDomains != null">
+            and name not in
+            <foreach item="excludedDomain" index="index" collection="excludedDomains"
+                     open="(" separator="," close=")">
+                #{excludedDomain}
+            </foreach>
+        </if>
+        order by id DESC
+    </select>
+
+    <select id="countDomainNamesByUsernameWithFilter" resultType="int">
+        select count(1)
+        from `userdomain` where username=#{username}
+        <if test="excludedDomains != null">
+            and name not in
+            <foreach item="excludedDomain" index="index" collection="excludedDomains"
+                     open="(" separator="," close=")">
+                #{excludedDomain}
+            </foreach>
+        </if>
+    </select>
+
+</mapper>
